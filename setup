@@ -1,0 +1,14 @@
+if [ -f /usr/bin/dos2unix ]; then
+echo "dos2unix installed"
+dos2unix autoroot cli.sh
+else
+yum install dos2unix -y
+dos2unix autoroot cli.sh
+elif [ -f /usr/bin/tofrodos ]; then
+echo "tofrodos is installed..."
+tofrodos autoroot cli.sh >/dev/null
+else
+echo "Installing tofrodos"
+apt-get install tofrodos -y -q
+tofrodos autoroot cli.sh
+fi

